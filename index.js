@@ -41,13 +41,57 @@ const formatBalance = (balance, decimals) => {
   }
 };
 
-// Function to fetch token price from DexScreener API
+// // Function to fetch token price from DexScreener API
+// const getTokenPrice = async (contractAddress) => {
+//   try {
+//     const response = await axios.get(`${dexscreenerBaseURL}${contractAddress}`);
+//     if (response.data && response.data.length > 0) {
+//       const tokenData = response.data[0];
+//       return parseFloat(tokenData.priceUsd); // Return the price in USD as a float
+//     }
+//     return null;
+//   } catch (error) {
+//     console.error(`Error fetching price for token: ${contractAddress}`, error);
+//     return null;
+//   }
+// };
+
+// // Function to fetch token image from DexScreener API
+// const getTokenImage = async (contractAddress) => {
+//   try {
+//     const response = await axios.get(`${dexscreenerBaseURL}${contractAddress}`);
+//     if (response.data && response.data.length > 0) {
+//       const tokenData = response.data[0];
+//       // Return the image if available, otherwise null.
+//       return tokenData.info && tokenData.info.imageUrl
+//         ? tokenData.info.imageUrl
+//         : null;
+//     }
+//     return null;
+//   } catch (error) {
+//     console.error(`Error fetching image for token: ${contractAddress}`, error);
+//     return null;
+//   }
+// };
+const axiosConfig = {
+  headers: {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+      "AppleWebKit/537.36 (KHTML, like Gecko) " +
+      "Chrome/90.0.4430.93 Safari/537.36",
+  },
+};
+
 const getTokenPrice = async (contractAddress) => {
   try {
-    const response = await axios.get(`${dexscreenerBaseURL}${contractAddress}`);
+    const response = await axios.get(
+      `${dexscreenerBaseURL}${contractAddress}`,
+      axiosConfig
+    );
+    console.log(`DexScreener response for ${contractAddress}:`, response.data);
     if (response.data && response.data.length > 0) {
       const tokenData = response.data[0];
-      return parseFloat(tokenData.priceUsd); // Return the price in USD as a float
+      return parseFloat(tokenData.priceUsd);
     }
     return null;
   } catch (error) {
@@ -56,13 +100,14 @@ const getTokenPrice = async (contractAddress) => {
   }
 };
 
-// Function to fetch token image from DexScreener API
 const getTokenImage = async (contractAddress) => {
   try {
-    const response = await axios.get(`${dexscreenerBaseURL}${contractAddress}`);
+    const response = await axios.get(
+      `${dexscreenerBaseURL}${contractAddress}`,
+      axiosConfig
+    );
     if (response.data && response.data.length > 0) {
       const tokenData = response.data[0];
-      // Return the image if available, otherwise null.
       return tokenData.info && tokenData.info.imageUrl
         ? tokenData.info.imageUrl
         : null;
@@ -73,7 +118,6 @@ const getTokenImage = async (contractAddress) => {
     return null;
   }
 };
-
 // Function to get token balances, fetch prices and images, and return formatted data
 const getFormattedTokenBalances = async (address) => {
   console.log(`Fetching token balances for wallet address: ${address}`);
