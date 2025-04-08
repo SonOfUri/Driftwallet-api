@@ -1,109 +1,218 @@
+// index.js
 const express = require("express");
 const { Alchemy, Network } = require("alchemy-sdk");
+const { ethers } = require("ethers"); // Although you use ethers only for formatting, you may choose to remove if unnecessary
 const axios = require("axios");
-const { ethers } = require("ethers"); // Import ethers.js
 require("dotenv").config();
 
+const app = express();
+const port = process.env.PORT || 3000;
+
+// ------------------------------
 // Initialize Alchemy SDK
+// ------------------------------
 const config = {
   apiKey: process.env.ALCHEMY_API_KEY, // Your Alchemy API Key
-  network: Network.BASE_MAINNET, // Ethereum Mainnet (can change to other networks)
+  network: Network.BASE_MAINNET, // Ethereum Mainnet
 };
 const alchemy = new Alchemy(config);
 
-// Initialize Express app
-const app = express();
-const port = 3000;
+// DexScreener API Base URL
+const dexscreenerBaseURL = "https://api.dexscreener.com/tokens/v1/base/";
 
-// Middleware to parse JSON request bodies
-app.use(express.json());
+// ------------------------------
+// Utility Functions
+// ------------------------------
 
-// Function to fetch token data from DexTools API
-const getTokenDataFromDex = async (contractAddress) => {
-  const dexUrl = `https://api.dexscreener.com/token/v1/base/${contractAddress}`;
-
+// Function to format token balance using ethers.js
+const formatBalance = (balance, decimals) => {
+  // Ensure the balance is a valid value
+  if (!balance || balance === "0" || balance === "0x0" || balance === "0x") {
+    console.log("Warning: Invalid or zero balance provided.");
+    return 0; // Return 0 if balance is invalid or empty
+  }
   try {
-    const response = await axios.get(dexUrl);
-    return response.data[0]; // Assuming we're getting a list of tokens, use the first one
+    // Convert to BigInt and divide by decimals
+    const formattedBalance = Number(BigInt(balance)) / 10 ** decimals;
+    return formattedBalance;
   } catch (error) {
-    console.error("Error fetching token data from DexTools:", error);
+    console.error("Error formatting balance:", error);
+    return 0;
+  }
+};
+
+// Function to fetch token price from DexScreener API
+const getTokenPrice = async (contractAddress) => {
+  try {
+    const response = await axios.get(`${dexscreenerBaseURL}${contractAddress}`);
+    if (response.data && response.data.length > 0) {
+      const tokenData = response.data[0];
+      return parseFloat(tokenData.priceUsd); // Return the price in USD as a float
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching price for token: ${contractAddress}`, error);
     return null;
   }
 };
 
-// Function to format token balance using ethers.js
-const formatBalance = (balance, decimals) => {
-  const formattedBalance = ethers.formatUnits(balance, decimals);
-  return parseFloat(formattedBalance).toFixed(2); // Return the balance formatted to 2 decimals
+// Function to fetch token image from DexScreener API
+const getTokenImage = async (contractAddress) => {
+  try {
+    const response = await axios.get(`${dexscreenerBaseURL}${contractAddress}`);
+    if (response.data && response.data.length > 0) {
+      const tokenData = response.data[0];
+      // Return the image if available, otherwise null.
+      return tokenData.info && tokenData.info.imageUrl
+        ? tokenData.info.imageUrl
+        : null;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error fetching image for token: ${contractAddress}`, error);
+    return null;
+  }
 };
 
-// API endpoint to get token balances for a given wallet address (in the URL)
-app.get("/getTokenBalances/:address", async (req, res) => {
-  const address = req.params.address; // Extract address from the URL
-
-  // Check if the wallet address is provided
-  if (!address) {
-    return res.status(400).json({ error: "Wallet address is required" });
-  }
-
+// Function to get token balances, fetch prices and images, and return formatted data
+const getFormattedTokenBalances = async (address) => {
+  console.log(`Fetching token balances for wallet address: ${address}`);
   try {
     // Fetch token balances for the provided address
     const balances = await alchemy.core.getTokenBalances(address);
+    console.log(
+      `Fetched ${balances.tokenBalances.length} token balances for ${address}`
+    );
 
-    // Filter out tokens with zero balance
-    const nonZeroBalances = balances.tokenBalances.filter((token) => {
-      return token.tokenBalance !== "0";
+    let totalWalletBalance = 0; // Total value of the wallet in USD
+    const tokens = []; // List of token data
+
+    // Fetch Ethereum (ETH) balance from Alchemy
+    const ethBalanceHex = await alchemy.core.getBalance(address);
+    console.log("ETH Balance Hex:", ethBalanceHex);
+    const ethBalanceInWei = BigInt(ethBalanceHex);
+    const formattedEthBalance = Number(ethBalanceInWei) / 10 ** 18; // Convert Wei to Ether
+
+    // Get ETH price using WETH contract address (as per your logic)
+    const ethPrice = await getTokenPrice(
+      "0x4200000000000000000000000000000000000006"
+    );
+    const ethTotalBalanceInUSD = formattedEthBalance * ethPrice;
+
+    // Set a unique image URL for ETH
+    const ethImage =
+      "https://dd.dexscreener.com/ds-data/tokens/base/0x4200000000000000000000000000000000000006.png?key=7d6327";
+
+    // Add ETH details
+    tokens.push({
+      name: "ETHEREUM",
+      symbol: "ETH",
+      quantity: formattedEthBalance,
+      price: ethPrice,
+      image: ethImage,
+      totalBalance: ethTotalBalanceInUSD,
+      contractAddress: "0x4200000000000000000000000000000000000006",
     });
+    totalWalletBalance += ethTotalBalanceInUSD;
 
-    const result = {
-      totalWalletBalance: 0,
-      tokens: [],
-    };
-
-    // Loop through all tokens with non-zero balances
-    for (let token of nonZeroBalances) {
+    // Process every token balance (excluding zero or invalid ones)
+    for (let token of balances.tokenBalances) {
       const contractAddress = token.contractAddress;
       let balance = token.tokenBalance;
+      console.log(`Raw Balance for ${contractAddress}:`, balance);
 
-      // Get token data from DexTools API
-      const tokenData = await getTokenDataFromDex(contractAddress);
+      if (
+        !balance ||
+        balance === "0" ||
+        balance === "0x0" ||
+        balance === "0x"
+      ) {
+        console.log(`Skipping token with invalid balance: ${contractAddress}`);
+        continue;
+      }
 
-      if (tokenData) {
-        // Format the balance using ethers.js
-        balance = formatBalance(balance, tokenData.baseToken.decimals);
+      try {
+        // Convert balance string to BigInt if necessary
+        if (typeof balance === "string" || balance instanceof String) {
+          balance = BigInt(balance);
+        } else if (typeof balance !== "bigint") {
+          console.error(`Invalid balance for token: ${contractAddress}`);
+          continue;
+        }
 
-        // Calculate the total balance in USD
-        const totalBalance = (
-          parseFloat(balance) * parseFloat(tokenData.priceUsd)
-        ).toFixed(2);
+        // Fetch token metadata (to obtain decimals, name, symbol)
+        const metadata = await alchemy.core.getTokenMetadata(contractAddress);
 
-        // Update the result object
-        result.totalWalletBalance += parseFloat(totalBalance);
+        if (metadata && metadata.decimals) {
+          const formattedBalance = formatBalance(balance, metadata.decimals);
+          const price = await getTokenPrice(contractAddress);
+          if (!price) continue; // Skip if price not found
 
-        // Add token info to the result
-        result.tokens.push({
-          name: tokenData.baseToken.name,
-          symbol: tokenData.baseToken.symbol,
-          quantity: balance,
-          price: tokenData.priceUsd,
-          image: tokenData.info.imageUrl,
-          totalBalance: totalBalance,
-          contractAddress: contractAddress,
-        });
+          const image = await getTokenImage(contractAddress);
+          const totalBalanceInUSD = formattedBalance * price;
+          totalWalletBalance += totalBalanceInUSD;
+
+          tokens.push({
+            name: metadata.name,
+            symbol: metadata.symbol,
+            quantity: formattedBalance,
+            price: price,
+            image: image !== undefined ? image : null,
+            totalBalance: totalBalanceInUSD,
+            contractAddress: contractAddress,
+          });
+
+          // Debug logs for token data
+          console.log(`Token: ${metadata.name} (${metadata.symbol})`);
+          console.log(`Contract Address: ${contractAddress}`);
+          console.log(`Balance: ${formattedBalance}`);
+          console.log(`Price (USD): ${price}`);
+          console.log(`Total Balance in USD: ${totalBalanceInUSD}`);
+          console.log("----------------------------------");
+        } else {
+          console.log(`No metadata found for token: ${contractAddress}`);
+        }
+      } catch (error) {
+        console.error(`Error processing token ${contractAddress}:`, error);
       }
     }
 
-    // Send the response
-    res.json(result);
+    console.log(`Total Wallet Balance (USD): ${totalWalletBalance}`);
+    return {
+      totalWalletBalance,
+      tokens,
+    };
   } catch (error) {
     console.error("Error fetching token balances:", error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while fetching token balances" });
+    throw error;
+  }
+};
+
+// ------------------------------
+// API Endpoint
+// ------------------------------
+
+// GET endpoint to fetch wallet balances by address.
+// You can request via: GET http://localhost:3000/wallet/0xYourWalletAddress
+app.get("/wallet/:address", async (req, res) => {
+  const { address } = req.params;
+  try {
+    const result = await getFormattedTokenBalances(address);
+    res.json(result);
+  } catch (error) {
+    console.error("Error handling API request:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// Start the server
+// Optionally, add a simple root endpoint or other endpoints as needed
+app.get("/", (req, res) => {
+  res.send("Node.js Token Balance API is running.");
+});
+
+// ------------------------------
+// Start the Server
+// ------------------------------
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  console.log(`API Server is listening on port ${port}`);
 });

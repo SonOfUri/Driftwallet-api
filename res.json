@@ -1,23 +1,95 @@
 {
-"totalWalletBalance": 5859.76816044924,
-"tokens": [
-    {
-    "name": "Coomer",
-    "symbol": "COOMER",
-    "quantity": 4363467591.23809,
-    "price": "0.0000000005101",
-    "image": "https://dd.dexscreener.com/ds-data/tokens/base/0x0c3B859DE07d1b765Fd596726c234D6AacOF7390.png",
-    "totalBalance": 2.22580481829055,
-    "contractAddress":"Ox0c3B859DE07d1b765Fd596726c234D6AaCOF7390"
-    }
-    {
-        "name": "Token2",
-        "symbol": "Token2",
-        "quantity": 4363467591.23809,
-        "price": "0.0000000005101",
-        "image": "https://dd.dexscreener.com/ds-data/tokens/base/0x0c3B859DE07d1b765Fd596726c234D6AacOF7390.png",
-        "totalBalance": 2.22580481829055,
-        "contractAddress": "Ox0c3B859DE07d1b000000000026c234D6AaCOF7390"
-    }
-]
+    "totalWalletBalance": 132.93661148043,
+    "tokens": [
+        {
+            "name": "ETHEREUM",
+            "symbol": "ETH",
+            "quantity": 0.027743289001375,
+            "price": 1473.088,
+            "image": "https://dd.dexscreener.com/ds-data/tokens/base/0x4200000000000000000000000000000000000006.png?key=7d6327",
+            "totalBalance": 40.8683061084576,
+            "contractAddress": "0x4200000000000000000000000000000000000006"
+        },
+        {
+            "name": "Based Coin",
+            "symbol": "BASED",
+            "quantity": 750,
+            "price": 0.000007958,
+            "image": "https://dd.dexscreener.com/ds-data/tokens/base/0x07d15798a67253d76cea61f0ea6f57aedc59dffb.png?key=1cd76c",
+            "totalBalance": 0.0059685,
+            "contractAddress": "0x07d15798a67253d76cea61f0ea6f57aedc59dffb"
+        },
+        {
+            "name": "DebtReliefBot",
+            "symbol": "DRB",
+            "quantity": 173803.336878686,
+            "price": 0.00008867,
+            "image": "https://dd.dexscreener.com/ds-data/tokens/base/0x3ec2156d4c0a9cbdab4a016633b7bcf6a8d68ea2.png?key=edc654",
+            "totalBalance": 15.4111418810331,
+            "contractAddress": "0x3ec2156d4c0a9cbdab4a016633b7bcf6a8d68ea2"
+        },
+        {
+            "name": "Wrapped Ether",
+            "symbol": "WETH",
+            "quantity": 0.0505726788362572,
+            "price": 1473.088,
+            "image": "https://dd.dexscreener.com/ds-data/tokens/base/0x4200000000000000000000000000000000000006.png?key=7d6327",
+            "totalBalance": 74.4980063215444,
+            "contractAddress": "0x4200000000000000000000000000000000000006"
+        },
+        {
+            "name": "God Kekius Maximus",
+            "symbol": "GKM",
+            "quantity": 1,
+            "price": 0.0002729,
+            "image": null,
+            "totalBalance": 0.0002729,
+            "contractAddress": "0x4b4c8ffda208105405655572d0d0562061cf9977"
+        },
+        {
+            "name": "Grok Cocoro",
+            "symbol": "GKC",
+            "quantity": 1,
+            "price": 0.0004647,
+            "image": null,
+            "totalBalance": 0.0004647,
+            "contractAddress": "0x50e5a24d328059cfcac0749d907c6846dd06f762"
+        },
+        {
+            "name": "AIC",
+            "symbol": "AIC",
+            "quantity": 888,
+            "price": 0.00003811,
+            "image": null,
+            "totalBalance": 0.03384168,
+            "contractAddress": "0x7f44af085837ed19365e029eebe3ba5b9b9fab22"
+        },
+        {
+            "name": "USD Coin",
+            "symbol": "USDC",
+            "quantity": 0,
+            "price": 1.000087,
+            "image": null,
+            "totalBalance": 0,
+            "contractAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913"
+        },
+        {
+            "name": "Aerodrome",
+            "symbol": "AERO",
+            "quantity": 6.66612453352885,
+            "price": 0.3175,
+            "image": "https://dd.dexscreener.com/ds-data/tokens/base/0x940181a94a35a4569e4529a3cdfb74e38fd98631.png?key=21fe20",
+            "totalBalance": 2.11649453939541,
+            "contractAddress": "0x940181a94a35a4569e4529a3cdfb74e38fd98631"
+        },
+        {
+            "name": "Snow Leopard",
+            "symbol": "SNL",
+            "quantity": 11500,
+            "price": 1.839e-7,
+            "image": null,
+            "totalBalance": 0.00211485,
+            "contractAddress": "0xc5a861787f3e173f2b004d5cfa6a717f5dc5484d"
+        }
+    ]
 }
