@@ -18,26 +18,16 @@ const formatBalance = (balance, decimals) => {
   // Ensure the balance is a valid value
   if (!balance || balance === "0" || balance === "0x0" || balance === "0x") {
     console.log("Warning: Invalid or zero balance provided.");
-    return "0.00"; // Return 0 if balance is invalid or empty
+    return 0; // Return 0 if balance is invalid or empty
   }
 
   try {
-    // Check if the balance is a valid BigInt, if not, convert it
-    let formattedBalance;
-    if (typeof balance === "string" || balance instanceof String) {
-      formattedBalance = Number(BigInt(balance)) / 10 ** decimals; // Convert to BigInt, then divide by 10^decimals
-    } else if (typeof balance === "bigint") {
-      formattedBalance = Number(balance) / 10 ** decimals; // Directly divide BigInt
-    } else {
-      console.error("Error: Invalid balance type.", balance);
-      formattedBalance = "0.00";
-    }
-
-    // Return the balance with 2 decimals
-    return parseFloat(formattedBalance).toFixed(2);
+    // Convert to BigInt and divide by decimals
+    const formattedBalance = Number(BigInt(balance)) / 10 ** decimals;
+    return formattedBalance;
   } catch (error) {
     console.error("Error formatting balance:", error);
-    return "0.00"; // Return 0 in case of error
+    return 0; // Return 0 in case of error
   }
 };
 
@@ -47,7 +37,7 @@ const getTokenPrice = async (contractAddress) => {
     const response = await axios.get(`${dexscreenerBaseURL}${contractAddress}`);
     if (response.data && response.data.length > 0) {
       const tokenData = response.data[0];
-      return tokenData.priceUsd; // Return the price in USD
+      return parseFloat(tokenData.priceUsd); // Return the price in USD as a float
     }
     return null;
   } catch (error) {
@@ -112,6 +102,9 @@ const getFormattedTokenBalances = async (address) => {
       contractAddress: "0x4200000000000000000000000000000000000006", // Using WETH address for ETH price
     });
 
+    // Add ETH balance to the total wallet balance
+    totalWalletBalance += ethTotalBalanceInUSD;
+
     // Loop through all token balances and format them
     for (let token of balances.tokenBalances) {
       const contractAddress = token.contractAddress;
@@ -120,7 +113,7 @@ const getFormattedTokenBalances = async (address) => {
       // Debugging: log the balance for each token
       console.log(`Raw Balance for ${contractAddress}:`, balance);
 
-      // Ensure that balance is a valid value (BigNumber or string)
+      // Ensure that balance is a valid value (BigInt or string)
       if (
         !balance ||
         balance === "0" ||
