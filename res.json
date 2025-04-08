@@ -1,0 +1,23 @@
+{
+"totalWalletBalance": 5859.76816044924,
+"tokens": [
+    {
+    "name": "Coomer",
+    "symbol": "COOMER",
+    "quantity": 4363467591.23809,
+    "price": "0.0000000005101",
+    "image": "https://dd.dexscreener.com/ds-data/tokens/base/0x0c3B859DE07d1b765Fd596726c234D6AacOF7390.png",
+    "totalBalance": 2.22580481829055,
+    "contractAddress":"Ox0c3B859DE07d1b765Fd596726c234D6AaCOF7390"
+    }
+    {
+        "name": "Token2",
+        "symbol": "Token2",
+        "quantity": 4363467591.23809,
+        "price": "0.0000000005101",
+        "image": "https://dd.dexscreener.com/ds-data/tokens/base/0x0c3B859DE07d1b765Fd596726c234D6AacOF7390.png",
+        "totalBalance": 2.22580481829055,
+        "contractAddress": "Ox0c3B859DE07d1b000000000026c234D6AaCOF7390"
+    }
+]
+}
