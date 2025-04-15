@@ -16,7 +16,7 @@ app.use(cors({ origin: "*" }));
 // ------------------------------
 const config = {
   apiKey: process.env.ALCHEMY_API_KEY, // Your Alchemy API Key
-  network: Network.BASE_MAINNET, // Ethereum Mainnet
+  network: Network.BASE_MAINNET, // Base Mainnet
 };
 const alchemy = new Alchemy(config);
 
