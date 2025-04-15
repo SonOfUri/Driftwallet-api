@@ -1,5 +1,5 @@
 const { Alchemy, Network } = require("alchemy-sdk");
-const { ethers } = require("ethers"); // Import ethers.js
+// const { ethers } = require("ethers"); // Import ethers.js
 require("dotenv").config();
 const axios = require("axios"); // For making HTTP requests to DexScreener
 
